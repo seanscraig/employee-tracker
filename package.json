@@ -1,0 +1,26 @@
+{
+  "name": "employee-tracker",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Sean Craig",
+  "license": "ISC",
+  "dependencies": {
+    "inquirer": "^6.3.1",
+    "express": "^4.17.1",
+    "mysql2": "^2.2.5",
+    "console.table": "^0.10.0"
+  },
+  "devDependencies": {},
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/seanscraig/employee-tracker.git"
+  },
+  "bugs": {
+    "url": "https://github.com/seanscraig/employee-tracker/issues"
+  },
+  "homepage": "https://github.com/seanscraig/employee-tracker#readme"
+}
