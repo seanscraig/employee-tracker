@@ -71,23 +71,27 @@ function menu() {
 
 menu();
 
+// formatted table showing employee data, including employee ids, first names, last names, job titles, departments, salaries, and managers that the employees report to
 function viewAllEmployees() {
   console.log("View All Employees not implemented yet");
   menu();
 }
 
-function addEmployee(){
+// prompted to enter the employee’s first name, last name, role, and manager, and that employee is added to the database
+function addEmployee() {
   console.log("Add Employee not implemented yet");
   menu();
 }
 
-function updateEmployeeRole(){
+// prompted to select an employee to update and their new role and this information is updated in the database
+function updateEmployeeRole() {
   console.log("Update Employee Role not implemented yet");
   menu();
 }
 
+// the job title, role id, the department that role belongs to, and the salary for that role
 function viewAllRoles() {
-  const sql = "SELECT * FROM role";
+  const sql = "SELECT role.id AS role_id, title, salary, department.name AS department FROM role JOIN department ON role.department_id = department.id;";
   db.query(sql, function (err, results) {
     console.log(`Showing Roles...\n`);
     console.table(results);
@@ -95,11 +99,7 @@ function viewAllRoles() {
   });
 }
 
-function addRole(){
-  console.log("Add Role not implemented yet");
-  menu();
-}
-
+// formatted table showing department names and department ids
 function viewAllDepartments() {
   const sql = "SELECT id, name FROM department";
   db.query(sql, function (err, results) {
@@ -110,9 +110,69 @@ function viewAllDepartments() {
   });
 }
 
+// prompted to enter the name, salary, and department for the role and that role is added to the database
+function addRole() {
+  inquirer
+    .prompt([
+      {
+        message: "What is the title of the role you want to add?",
+        name: "title",
+      },
+      {
+        message: "What is the the salary for the role you want to add?",
+        name: "salary",
+      },
+    ])
+    .then((answer) => {
+      const arrParams = [answer.title, answer.salary];
+      inquirer
+        .prompt([
+          {
+            message: "What department is the role in?",
+            name: "department",
+          },
+        ])
+        .then((answer) => {
+          const depSql = "SELECT id FROM department WHERE name = ?";
+          db.query(depSql, answer.department, function (err, rows) {
+            if (err) throw err;
+            arrParams.push(rows[0].id);
+            console.log(arrParams);
+            const sql = `INSERT INTO role (title, salary, department_id) VALUES(?, ?, ?)`;
+            db.query(
+              sql,
+              arrParams,
+              function (err, results) {
+                if (err) throw err;
+                console.log(`Adding Role...\n`);
+                console.table(results);
+                menu();
+              }
+            );
+          });
+        });
+    });
+}
+
+// prompted to enter the name of the department and that department is added to the database
 function addDepartment() {
-  console.log("Add Department not implemented yet");
-  menu();
+  // console.log("Add Department not implemented yet");
+  inquirer
+    .prompt([
+      {
+        message: "What is the name of the department you want to add?",
+        name: "name",
+      },
+    ])
+    .then((answer) => {
+      const sql = `INSERT INTO department (name) VALUES(?)`;
+      db.query(sql, answer.name, function (err, results) {
+        if (err) throw err;
+        console.log(`Adding Department...\n`);
+        console.table(results);
+        menu();
+      });
+    });
 }
 
 // whenever a request comes in that that doesn't have a route it will be handled here
