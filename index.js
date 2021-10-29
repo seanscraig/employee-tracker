@@ -72,14 +72,27 @@ function menu() {
 menu();
 
 // formatted table showing employee data, including employee ids, first names, last names, job titles, departments, salaries, and managers that the employees report to
+// missing manager
 function viewAllEmployees() {
-  console.log("View All Employees not implemented yet");
+  const sql = `SELECT employee.id, 
+                     employee.first_name, 
+                     employee.last_name, 
+                     role.title, role.salary, 
+                     department.name AS department 
+              FROM employee 
+              LEFT JOIN role ON employee.role_id = role.id 
+              LEFT JOIN department ON role.department_id = department.id`;
+  db.query(sql, function (err, results) {
+    console.log(`Showing Employees...\n`);
+    console.table(results);
+    menu();
+  });
   menu();
 }
 
 // prompted to enter the employee’s first name, last name, role, and manager, and that employee is added to the database
 function addEmployee() {
-  console.log("Add Employee not implemented yet");
+  console.log("View All Employees not implemented yet");
   menu();
 }
 
@@ -91,7 +104,12 @@ function updateEmployeeRole() {
 
 // the job title, role id, the department that role belongs to, and the salary for that role
 function viewAllRoles() {
-  const sql = "SELECT role.id AS role_id, title, salary, department.name AS department FROM role JOIN department ON role.department_id = department.id;";
+  const sql = `SELECT role.id AS role_id, 
+                      role.title, 
+                      role.salary, 
+                      department.name AS department 
+               FROM role 
+               JOIN department ON role.department_id = department.id`;
   db.query(sql, function (err, results) {
     console.log(`Showing Roles...\n`);
     console.table(results);
@@ -101,7 +119,9 @@ function viewAllRoles() {
 
 // formatted table showing department names and department ids
 function viewAllDepartments() {
-  const sql = "SELECT id, name FROM department";
+  const sql = `SELECT id, 
+                      name 
+               FROM department`;
   db.query(sql, function (err, results) {
     if (err) throw err;
     console.log(`Showing Departments...\n`);
@@ -133,22 +153,21 @@ function addRole() {
           },
         ])
         .then((answer) => {
-          const depSql = "SELECT id FROM department WHERE name = ?";
+          const depSql = `SELECT id 
+                          FROM department 
+                          WHERE name = ?`;
           db.query(depSql, answer.department, function (err, rows) {
             if (err) throw err;
             arrParams.push(rows[0].id);
             console.log(arrParams);
-            const sql = `INSERT INTO role (title, salary, department_id) VALUES(?, ?, ?)`;
-            db.query(
-              sql,
-              arrParams,
-              function (err, results) {
-                if (err) throw err;
-                console.log(`Adding Role...\n`);
-                console.table(results);
-                menu();
-              }
-            );
+            const sql = `INSERT INTO role (title, salary, department_id) 
+                         VALUES(?, ?, ?)`;
+            db.query(sql, arrParams, function (err, results) {
+              if (err) throw err;
+              console.log(`Adding Role...\n`);
+              console.table(results);
+              menu();
+            });
           });
         });
     });
@@ -165,7 +184,8 @@ function addDepartment() {
       },
     ])
     .then((answer) => {
-      const sql = `INSERT INTO department (name) VALUES(?)`;
+      const sql = `INSERT INTO department (name) 
+                   VALUES(?)`;
       db.query(sql, answer.name, function (err, results) {
         if (err) throw err;
         console.log(`Adding Department...\n`);
