@@ -146,31 +146,37 @@ function addRole() {
     ])
     .then((answer) => {
       const arrParams = [answer.title, answer.salary];
-      inquirer
-        .prompt([
-          {
-            message: "What department is the role in?",
-            name: "department",
-          },
-        ])
-        .then((answer) => {
-          const depSql = `SELECT id 
-                          FROM department 
-                          WHERE name = ?`;
-          db.query(depSql, answer.department, function (err, rows) {
-            if (err) throw err;
-            arrParams.push(rows[0].id);
-            console.log(arrParams);
-            const sql = `INSERT INTO role (title, salary, department_id) 
+      const deptSql = `SELECT name FROM department;`;
+      db.query(deptSql, function (err, results) {
+        if (err) throw err;
+        const resultArr = results;
+        inquirer
+          .prompt([
+            {
+              type: "list",
+              message: "What department is this role in?",
+              choices: resultArr,
+              name: "department",
+            },
+          ])
+          .then((answer) => {
+            const idSql = `SELECT id FROM department WHERE name = ?;`;
+
+            db.query(idSql, answer.department, function (err, result) {
+
+              arrParams.push(result[0].id);
+
+              const sql = `INSERT INTO role (title, salary, department_id) 
                          VALUES(?, ?, ?)`;
-            db.query(sql, arrParams, function (err, results) {
-              if (err) throw err;
-              console.log(`Adding Role...\n`);
-              console.table(results);
-              menu();
+
+              db.query(sql, arrParams, function (err, results) {
+                if (err) throw err;
+                console.log(`Adding ${arrParams[0]}...\n`);
+                menu();
+              });
             });
           });
-        });
+      });
     });
 }
 
@@ -189,8 +195,7 @@ function addDepartment() {
                    VALUES(?)`;
       db.query(sql, answer.name, function (err, results) {
         if (err) throw err;
-        console.log(`Adding Department...\n`);
-        console.table(results);
+        console.log(`Adding ${answer.name}...\n`);
         menu();
       });
     });
