@@ -60,7 +60,7 @@ function menu() {
 
       case "Quit":
         console.log("Quit, have a nice day!");
-        db.end();
+        // db.end();
         return;
 
       default:
@@ -72,22 +72,23 @@ function menu() {
 menu();
 
 // formatted table showing employee data, including employee ids, first names, last names, job titles, departments, salaries, and managers that the employees report to
-// missing manager
 function viewAllEmployees() {
-  const sql = `SELECT employee.id, 
-                     employee.first_name, 
-                     employee.last_name, 
-                     role.title, role.salary, 
-                     department.name AS department 
-              FROM employee 
-              LEFT JOIN role ON employee.role_id = role.id 
-              LEFT JOIN department ON role.department_id = department.id`;
+  const sql = `SELECT employee.id,
+                      employee.first_name, 
+                      employee.last_name, 
+                      role.title, 
+                      role.salary, 
+                      department.name AS department,
+                      CONCAT(manager.first_name, " ",manager.last_name) AS manager
+               FROM employee
+               JOIN role ON employee.role_id = role.id
+               JOIN department ON role.department_id = department.id
+               JOIN employee manager ON manager.id = employee.manager_id;`;
   db.query(sql, function (err, results) {
     console.log(`Showing Employees...\n`);
     console.table(results);
     menu();
   });
-  menu();
 }
 
 // prompted to enter the employee’s first name, last name, role, and manager, and that employee is added to the database

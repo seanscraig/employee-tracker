@@ -25,11 +25,11 @@ CREATE TABLE employee (
   first_name VARCHAR(30) NOT NULL,
   last_name VARCHAR(30) NOT NULL,
   role_id INT NOT NULL,
-  mananger_id INT,
+  manager_id INT,
   PRIMARY KEY (id),
   FOREIGN KEY (role_id)
-  REFERENCES role(id) ON DELETE SET NULL,
-  FOREIGN KEY (mananger_id)
+  REFERENCES role(id) ON DELETE CASCADE,
+  FOREIGN KEY (manager_id)
   REFERENCES employee(id)
   ON DELETE CASCADE
 );
@@ -50,7 +50,7 @@ VALUES ('Sales Lead', 100000, 2),
        ('Lawyer', 90000, 3),
        ('Accountant', 90000, 4);
 
-INSERT INTO employee (first_name, last_name,role_id, mananger_id)
+INSERT INTO employee (first_name, last_name,role_id, manager_id)
 VALUES ('John', 'Doe', 2, NULL),
        ('Charlie', 'Chan', 1, NULL),
        ('Mike', 'Smith', 3, NULL),
@@ -59,3 +59,7 @@ VALUES ('John', 'Doe', 2, NULL),
        ('Sarah', 'Lourd', 6, 1),
        ('Tom', 'Hanks', 7, 3),
        ('Ashley', 'Rodriguez', 8, 4);
+
+DESCRIBE department;
+DESCRIBE role;
+DESCRIBE employee;
