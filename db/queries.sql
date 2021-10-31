@@ -1,13 +1,9 @@
 USE employees_db;
 
-SELECT employee.id,
-       employee.first_name, 
-       employee.last_name, 
+SELECT role.id AS role_id, 
        role.title, 
        role.salary, 
-       department.name AS department,
-       CONCAT(manager.first_name, " ",manager.last_name) AS manager
-FROM employee
-JOIN role ON employee.role_id = role.id
+       department.name AS department 
+FROM role 
 JOIN department ON role.department_id = department.id
-JOIN employee manager ON manager.id = employee.manager_id;
+ORDER BY role.id ASC;

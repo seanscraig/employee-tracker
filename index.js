@@ -110,7 +110,8 @@ function viewAllRoles() {
                       role.salary, 
                       department.name AS department 
                FROM role 
-               JOIN department ON role.department_id = department.id`;
+               JOIN department ON role.department_id = department.id
+               ORDER BY role.id ASC;`;
   db.query(sql, function (err, results) {
     console.log(`Showing Roles...\n`);
     console.table(results);
@@ -122,7 +123,8 @@ function viewAllRoles() {
 function viewAllDepartments() {
   const sql = `SELECT id, 
                       name 
-               FROM department`;
+               FROM department
+               ORDER BY id ASC;`;
   db.query(sql, function (err, results) {
     if (err) throw err;
     console.log(`Showing Departments...\n`);
