@@ -60,8 +60,7 @@ function menu() {
 
       case "Quit":
         console.log("Quit, have a nice day!");
-        // db.end();
-        return;
+        process.exit(0);
 
       default:
         console.log("Not an option.");
@@ -70,6 +69,36 @@ function menu() {
 }
 
 menu();
+
+// formatted table showing department names and department ids
+function viewAllDepartments() {
+  const sql = `SELECT id, 
+                      name 
+               FROM department
+               ORDER BY id ASC;`;
+  db.query(sql, function (err, results) {
+    if (err) throw err;
+    console.log(`Showing Departments...\n`);
+    console.table(results);
+    menu();
+  });
+}
+
+// the job title, role id, the department that role belongs to, and the salary for that role
+function viewAllRoles() {
+  const sql = `SELECT role.id AS role_id, 
+                      role.title, 
+                      role.salary, 
+                      department.name AS department 
+               FROM role 
+               JOIN department ON role.department_id = department.id
+               ORDER BY role.id ASC;`;
+  db.query(sql, function (err, results) {
+    console.log(`Showing Roles...\n`);
+    console.table(results);
+    menu();
+  });
+}
 
 // formatted table showing employee data, including employee ids, first names, last names, job titles, departments, salaries, and managers that the employees report to
 function viewAllEmployees() {
@@ -91,46 +120,25 @@ function viewAllEmployees() {
   });
 }
 
-// prompted to enter the employee’s first name, last name, role, and manager, and that employee is added to the database
-function addEmployee() {
-  console.log("View All Employees not implemented yet");
-  menu();
-}
-
-// prompted to select an employee to update and their new role and this information is updated in the database
-function updateEmployeeRole() {
-  console.log("Update Employee Role not implemented yet");
-  menu();
-}
-
-// the job title, role id, the department that role belongs to, and the salary for that role
-function viewAllRoles() {
-  const sql = `SELECT role.id AS role_id, 
-                      role.title, 
-                      role.salary, 
-                      department.name AS department 
-               FROM role 
-               JOIN department ON role.department_id = department.id
-               ORDER BY role.id ASC;`;
-  db.query(sql, function (err, results) {
-    console.log(`Showing Roles...\n`);
-    console.table(results);
-    menu();
-  });
-}
-
-// formatted table showing department names and department ids
-function viewAllDepartments() {
-  const sql = `SELECT id, 
-                      name 
-               FROM department
-               ORDER BY id ASC;`;
-  db.query(sql, function (err, results) {
-    if (err) throw err;
-    console.log(`Showing Departments...\n`);
-    console.table(results);
-    menu();
-  });
+// prompted to enter the name of the department and that department is added to the database
+function addDepartment() {
+  // console.log("Add Department not implemented yet");
+  inquirer
+    .prompt([
+      {
+        message: "What is the name of the department you want to add?",
+        name: "name",
+      },
+    ])
+    .then((answer) => {
+      const sql = `INSERT INTO department (name) 
+                   VALUES(?)`;
+      db.query(sql, answer.name, function (err, results) {
+        if (err) throw err;
+        console.log(`Adding ${answer.name}...\n`);
+        menu();
+      });
+    });
 }
 
 // prompted to enter the name, salary, and department for the role and that role is added to the database
@@ -152,6 +160,7 @@ function addRole() {
       db.query(deptSql, function (err, results) {
         if (err) throw err;
         const resultArr = results;
+        console.log(resultArr);
         inquirer
           .prompt([
             {
@@ -165,7 +174,6 @@ function addRole() {
             const idSql = `SELECT id FROM department WHERE name = ?;`;
 
             db.query(idSql, answer.department, function (err, result) {
-
               arrParams.push(result[0].id);
 
               const sql = `INSERT INTO role (title, salary, department_id) 
@@ -182,25 +190,103 @@ function addRole() {
     });
 }
 
-// prompted to enter the name of the department and that department is added to the database
-function addDepartment() {
-  // console.log("Add Department not implemented yet");
+// prompted to enter the employee’s first name, last name, role, and manager, and that employee is added to the database
+function addEmployee() {
   inquirer
     .prompt([
       {
-        message: "What is the name of the department you want to add?",
-        name: "name",
+        message: "What is the first name of the employee you want to add?",
+        name: "first_name",
+      },
+      {
+        message: "What is the last name of the employee you want to add?",
+        name: "last_name",
       },
     ])
     .then((answer) => {
-      const sql = `INSERT INTO department (name) 
-                   VALUES(?)`;
-      db.query(sql, answer.name, function (err, results) {
+      const arrParams = [answer.first_name, answer.last_name];
+      const roleSql = `SELECT title AS name FROM role;`;
+      db.query(roleSql, (err, rows) => {
         if (err) throw err;
-        console.log(`Adding ${answer.name}...\n`);
-        menu();
+        const resultArr = rows;
+        inquirer
+          .prompt([
+            {
+              type: "list",
+              message: "What is the role of the employee you want to add?",
+              choices: resultArr,
+              name: "role",
+            },
+          ])
+          .then((answer) => {
+            const roleIdSql = `SELECT id FROM role WHERE title = ?;`;
+            db.query(roleIdSql, answer.role, (err, row) => {
+              if (err) throw err;
+              arrParams.push(row[0].id);
+              const managerSql = `SELECT CONCAT(first_name, " ", last_name) AS name
+                                  FROM employee
+                                  WHERE manager_id IS NULL;`;
+              db.query(managerSql, (err, results) => {
+                if (err) throw err;
+                const managerArr = results;
+                managerArr.push("None");
+                inquirer
+                  .prompt([
+                    {
+                      type: "list",
+                      message:
+                        "Who is the manager of the employee you want to add?",
+                      choices: managerArr,
+                      name: "manager",
+                    },
+                  ])
+                  .then((answer) => {
+                    if (answer.manager === "None") {
+                      arrParams.push(null);
+
+                      console.log(arrParams);
+                      const addSql = `INSERT INTO employee (first_name, last_name,role_id, manager_id)
+                                    VALUES (?, ?, ?, ?);`;
+                      db.query(addSql, arrParams, (err, result) => {
+                        if (err) throw err;
+                        console.log(
+                          `Adding ${arrParams[0] + " " + arrParams[1]}...\n`
+                        );
+                        menu();
+                      });
+                    } else {
+                      const name = answer.manager.split(" ");
+                      const managerIdSql = `SELECT id 
+                                            FROM employee
+                                            WHERE first_name = ? AND last_name = ?;`;
+                      db.query(managerIdSql, name, (err, result) => {
+                        if (err) throw err;
+                        arrParams.push(result[0].id);
+                        console.log(arrParams);
+                        const addSql = `INSERT INTO employee (first_name, last_name,role_id, manager_id)
+                                    VALUES (?, ?, ?, ?);`;
+                        db.query(addSql, arrParams, (err, result) => {
+                          if (err) throw err;
+                          console.log(arrParams);
+                          console.log(
+                            `Adding ${arrParams[0] + " " + arrParams[1]}...\n`
+                          );
+                          menu();
+                        });
+                      });
+                    }
+                  });
+              });
+            });
+          });
       });
     });
+}
+
+// prompted to select an employee to update and their new role and this information is updated in the database
+function updateEmployeeRole() {
+  console.log("Update Employee Role not implemented yet");
+  menu();
 }
 
 // whenever a request comes in that that doesn't have a route it will be handled here
