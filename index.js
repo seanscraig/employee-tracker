@@ -94,17 +94,17 @@ function viewAllRoles() {
 
 // formatted table showing employee data, including employee ids, first names, last names, job titles, departments, salaries, and managers that the employees report to
 function viewAllEmployees() {
-  const sql = `SELECT employee.id,
-                      employee.first_name, 
-                      employee.last_name, 
+  const sql = `SELECT e.id,
+                      e.first_name, 
+                      e.last_name, 
                       role.title, 
                       role.salary, 
                       department.name AS department,
-                      CONCAT(manager.first_name, " ",manager.last_name) AS manager
-               FROM employee
-               JOIN role ON employee.role_id = role.id
-               JOIN department ON role.department_id = department.id
-               JOIN employee manager ON manager.id = employee.manager_id;`;
+                      CONCAT(m.first_name, " ",m.last_name) AS manager
+              FROM employee e
+              INNER JOIN role ON e.role_id = role.id
+              INNER JOIN department ON role.department_id = department.id
+              LEFT JOIN employee m ON m.id = e.manager_id;`;
   db.query(sql, function (err, results) {
     console.log(`Showing Employees...\n`);
     console.table(results);
@@ -220,7 +220,6 @@ function addEmployee() {
                 if (err) throw err;
                 const managerArr = results;
                 managerArr.splice(0, 0, "None");
-                // managerArr.push("None");
                 inquirer
                   .prompt([
                     {
@@ -327,8 +326,22 @@ function updateEmployeeRole() {
 }
 
 function viewAllEmployeesByDepartment() {
-  console.log("View All Employees By Department not implemented yet");
-  menu();
+  // console.log("View All Employees By Department not implemented yet");
+  const sql = `SELECT employee.id,
+                      employee.first_name,
+                      employee.last_name,
+                      role.title,
+                      role.salary,
+                      department.name
+               FROM employee
+               JOIN role ON employee.role_id = role.id
+               JOIN department ON role.department_id = department.id;`;
+  db.query(sql, function (err, results) {
+    if (err) throw err;
+    console.log(`Showing Employees By Department...\n`);
+    console.table(results);
+    menu();
+  });
 }
 
 // whenever a request comes in that that doesn't have a route it will be handled here
