@@ -1,5 +1,11 @@
 USE employees_db;
 
-UPDATE employee
-SET role_id = 1
-WHERE first_name = "John" AND last_name = "Doe";
+SELECT employee.id,
+       employee.first_name,
+       employee.last_name,
+       role.title,
+       role.salary,
+       department.name
+FROM employee
+JOIN role ON employee.role_id = role.id
+JOIN department ON role.department_id = department.id;

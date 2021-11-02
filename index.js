@@ -1,8 +1,8 @@
 // importing the required packages (inquirer, express and mysql2)
 const inquirer = require("inquirer");
 const express = require("express");
-const mysql = require("mysql2");
 const cTable = require("console.table");
+const db = require("./config/connection");
 
 // importing the menu prompt object
 const menuPrompt = require("./prompts/menuPrompt");
@@ -15,23 +15,31 @@ const app = express();
 app.use(express.urlencoded({ extended: false }));
 app.use(express.json());
 
-// connecting the database
-const db = mysql.createConnection(
-  {
-    host: "localhost",
-    user: "root",
-    password: "password",
-    database: "employees_db",
-  },
-  // sanity check
-  console.log("Connected to the employees_db database.")
-);
-
 function menu() {
   inquirer.prompt(menuPrompt).then((answer) => {
     switch (answer.menuInput) {
+      case "View All Departments":
+        viewAllDepartments();
+        break;
+
+      case "View All Roles":
+        viewAllRoles();
+        break;
+
       case "View All Employees":
         viewAllEmployees();
+        break;
+
+      case "View All Employees By Department":
+        viewAllEmployeesByDepartment();
+        break;
+
+      case "Add Department":
+        addDepartment();
+        break;
+
+      case "Add Role":
+        addRole();
         break;
 
       case "Add Employee":
@@ -40,22 +48,6 @@ function menu() {
 
       case "Update Employee Role":
         updateEmployeeRole();
-        break;
-
-      case "View All Roles":
-        viewAllRoles();
-        break;
-
-      case "Add Role":
-        addRole();
-        break;
-
-      case "View All Departments":
-        viewAllDepartments();
-        break;
-
-      case "Add Department":
-        addDepartment();
         break;
 
       case "Quit":
@@ -72,10 +64,10 @@ menu();
 
 // formatted table showing department names and department ids
 function viewAllDepartments() {
-  const sql = `SELECT id, 
-                      name 
+  const sql = `SELECT id AS department_id, 
+                      name AS department_name
                FROM department
-               ORDER BY id ASC;`;
+               ORDER BY id;`;
   db.query(sql, function (err, results) {
     if (err) throw err;
     console.log(`Showing Departments...\n`);
@@ -92,7 +84,7 @@ function viewAllRoles() {
                       department.name AS department 
                FROM role 
                JOIN department ON role.department_id = department.id
-               ORDER BY role.id ASC;`;
+               ORDER BY role.id;`;
   db.query(sql, function (err, results) {
     console.log(`Showing Roles...\n`);
     console.table(results);
@@ -175,7 +167,7 @@ function addRole() {
               arrParams.push(result[0].id);
 
               const sql = `INSERT INTO role (title, salary, department_id) 
-                         VALUES(?, ?, ?)`;
+                           VALUES(?, ?, ?)`;
 
               db.query(sql, arrParams, function (err, results) {
                 if (err) throw err;
@@ -227,7 +219,8 @@ function addEmployee() {
               db.query(managerSql, (err, results) => {
                 if (err) throw err;
                 const managerArr = results;
-                managerArr.push("None");
+                managerArr.splice(0, 0, "None");
+                // managerArr.push("None");
                 inquirer
                   .prompt([
                     {
@@ -331,6 +324,11 @@ function updateEmployeeRole() {
         });
       });
   });
+}
+
+function viewAllEmployeesByDepartment() {
+  console.log("View All Employees By Department not implemented yet");
+  menu();
 }
 
 // whenever a request comes in that that doesn't have a route it will be handled here
