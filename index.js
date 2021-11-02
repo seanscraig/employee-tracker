@@ -108,17 +108,17 @@ function viewAllRoles() {
 
 // formatted table showing employee data, including employee ids, first names, last names, job titles, departments, salaries, and managers that the employees report to
 function viewAllEmployees() {
-  const sql = `SELECT e.id,
-                      e.first_name, 
-                      e.last_name, 
+  const sql = `SELECT employee.id,
+                      employee.first_name, 
+                      employee.last_name, 
                       role.title, 
                       role.salary, 
                       department.name AS department,
-                      CONCAT(m.first_name, " ",m.last_name) AS manager
-              FROM employee e
-              INNER JOIN role ON e.role_id = role.id
+                      CONCAT(manager.first_name, " ",manager.last_name) AS manager
+              FROM employee
+              INNER JOIN role ON employee.role_id = role.id
               INNER JOIN department ON role.department_id = department.id
-              LEFT JOIN employee m ON m.id = e.manager_id;`;
+              LEFT JOIN employee manager ON manager.id = employee.manager_id;`;
   db.query(sql, function (err, results) {
     console.log(`Showing Employees...\n`);
     console.table(results);
