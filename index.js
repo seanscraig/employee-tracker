@@ -16,6 +16,11 @@ app.use(express.urlencoded({ extended: false }));
 app.use(express.json());
 
 function menu() {
+  // console.log("+----------------------------------------------------------------+");
+  // console.log("|                                                                |");
+  // console.log("|                      Employee Manager                          |");
+  // console.log("|                                                                |");
+  // console.log("+----------------------------------------------------------------+");
   inquirer.prompt(menuPrompt).then((answer) => {
     switch (answer.menuInput) {
       case "View All Departments":
@@ -60,7 +65,16 @@ function menu() {
   });
 }
 
-menu();
+function init(){
+  console.log("+----------------------------------------------------------------+");
+  console.log("|                                                                |");
+  console.log("|                      Employee Manager                          |");
+  console.log("|                                                                |");
+  console.log("+----------------------------------------------------------------+");
+  menu();
+}
+
+init();
 
 // formatted table showing department names and department ids
 function viewAllDepartments() {
