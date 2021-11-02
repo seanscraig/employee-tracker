@@ -60,6 +60,6 @@ VALUES ('John', 'Doe', 2, NULL),
        ('Tom', 'Hanks', 7, 3),
        ('Ashley', 'Rodriguez', 8, 4);
 
-DESCRIBE department;
-DESCRIBE role;
-DESCRIBE employee;
+SELECT * FROM department;
+SELECT * FROM role;
+SELECT * FROM employee;

@@ -122,7 +122,6 @@ function viewAllEmployees() {
 
 // prompted to enter the name of the department and that department is added to the database
 function addDepartment() {
-  // console.log("Add Department not implemented yet");
   inquirer
     .prompt([
       {
@@ -160,7 +159,6 @@ function addRole() {
       db.query(deptSql, function (err, results) {
         if (err) throw err;
         const resultArr = results;
-        console.log(resultArr);
         inquirer
           .prompt([
             {
@@ -243,10 +241,8 @@ function addEmployee() {
                   .then((answer) => {
                     if (answer.manager === "None") {
                       arrParams.push(null);
-
-                      console.log(arrParams);
                       const addSql = `INSERT INTO employee (first_name, last_name,role_id, manager_id)
-                                    VALUES (?, ?, ?, ?);`;
+                                      VALUES (?, ?, ?, ?);`;
                       db.query(addSql, arrParams, (err, result) => {
                         if (err) throw err;
                         console.log(
@@ -262,12 +258,10 @@ function addEmployee() {
                       db.query(managerIdSql, name, (err, result) => {
                         if (err) throw err;
                         arrParams.push(result[0].id);
-                        console.log(arrParams);
                         const addSql = `INSERT INTO employee (first_name, last_name,role_id, manager_id)
                                     VALUES (?, ?, ?, ?);`;
                         db.query(addSql, arrParams, (err, result) => {
                           if (err) throw err;
-                          console.log(arrParams);
                           console.log(
                             `Adding ${arrParams[0] + " " + arrParams[1]}...\n`
                           );
@@ -285,8 +279,58 @@ function addEmployee() {
 
 // prompted to select an employee to update and their new role and this information is updated in the database
 function updateEmployeeRole() {
-  console.log("Update Employee Role not implemented yet");
-  menu();
+  const employeeSql = `SELECT CONCAT(first_name, " ", last_name) AS name
+               FROM employee;`;
+  db.query(employeeSql, function (err, results) {
+    if (err) throw err;
+    inquirer
+      .prompt([
+        {
+          type: "list",
+          message:
+            "Please select the employee you want to to update their role.",
+          choices: results,
+          name: "employee",
+        },
+      ])
+      .then((answer) => {
+        const arrParams = answer.employee.split(" ");
+        const roleSql = `SELECT title AS name
+                         FROM role;`;
+        db.query(roleSql, function (err, rows) {
+          if (err) throw err;
+          inquirer
+            .prompt([
+              {
+                type: "list",
+                message:
+                  "Please select the role you would like to assign to the selected employee.",
+                choices: rows,
+                name: "title",
+              },
+            ])
+            .then((answer) => {
+              const idSql = `SELECT id FROM role WHERE title = ?`;
+              db.query(idSql, answer.title, function (err, row) {
+                if (err) throw err;
+                arrParams.splice(0, 0, row[0].id);
+                const updateSql = `UPDATE employee
+                                   SET role_id = ?
+                                   WHERE first_name = ? AND last_name = ?;`;
+                db.query(updateSql, arrParams, function (err, results) {
+                  if (err) throw err;
+                  console.log(
+                    `Updating role for ${
+                      arrParams[1] + " " + arrParams[2]
+                    }...\n`
+                  );
+                  menu();
+                });
+              });
+            });
+        });
+      });
+  });
 }
 
 // whenever a request comes in that that doesn't have a route it will be handled here
